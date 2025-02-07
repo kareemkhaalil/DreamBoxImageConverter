@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ar">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>منصة رفع الصور</title>
+    <!-- إضافة خط Cairo من Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+    <!-- إضافة Font Awesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+      /* تنسيق عام */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Cairo', sans-serif;
+      }
+
+      body {
+        background-color: #f0f4f8;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        direction: rtl;
+        padding: 1rem;
+      }
+
+      .container {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 800px;
+        text-align: center;
+        margin: 1rem;
+      }
+
+      .logo {
+        width: 120px;
+        margin-bottom: 1.5rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+      }
+
+      .upload-form {
+        margin-bottom: 2rem;
+      }
+
+      .upload-form input[type="file"] {
+        display: none;
+      }
+
+      .upload-form label {
+        background-color: #3498db;
+        color: #ffffff;
+        padding: 1rem 2rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: background-color 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0.75rem;
+      }
+
+      .upload-form label:hover {
+        background-color: #2980b9;
+      }
+
+      .file-info {
+        margin-top: 1.5rem;
+        text-align: right;
+      }
+
+      .file-info p {
+        margin: 0.75rem 0;
+        color: #2c3e50;
+        font-size: 1rem;
+      }
+
+      .status {
+        margin-top: 2rem;
+        text-align: right;
+        font-size: 1.1rem;
+        color: #2c3e50;
+      }
+
+      .progress-bar {
+        width: 100%;
+        background-color: #e0e0e0;
+        border-radius: 5px;
+        margin: 1.5rem 0;
+        overflow: hidden;
+      }
+
+      .progress {
+        width: 0%;
+        height: 20px;
+        background-color: #3498db;
+        border-radius: 5px;
+        transition: width 0.3s ease;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 2rem;
+      }
+
+      table, th, td {
+        border: 1px solid #ddd;
+      }
+
+      th, td {
+        padding: 12px;
+        text-align: right;
+      }
+
+      th {
+        background-color: #3498db;
+        color: #ffffff;
+      }
+
+      td a {
+        color: #3498db;
+        text-decoration: none;
+      }
+
+      td a:hover {
+        text-decoration: underline;
+      }
+
+      .download-link {
+        margin-top: 1.5rem;
+        text-align: center;
+      }
+
+      .download-link a {
+        background-color: #2ecc71;
+        color: #ffffff;
+        padding: 1rem 2rem;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 1.1rem;
+        transition: background-color 0.3s ease;
+        display: inline-block;
+      }
+
+      .download-link a:hover {
+        background-color: #27ae60;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1.5rem;
+        }
+
+        h1 {
+          font-size: 1.75rem;
+        }
+
+        .upload-form label {
+          padding: 0.75rem 1.5rem;
+          font-size: 1rem;
+        }
+
+        .file-info p {
+          font-size: 0.9rem;
+        }
+
+        th, td {
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- لوجو المنصة -->
+      <img src="/assets/logo.png" alt="لوجو المنصة" class="logo" />
+      <h1>Dream Image Links Generator</h1>
+
+      <!-- نموذج الرفع -->
+      <form id="uploadForm" class="upload-form">
+        <label for="zipFile">
+          <i class="fas fa-file-archive"></i> اختر ملف ZIP
+        </label>
+        <input type="file" name="zipFile" id="zipFile" accept=".zip" required />
+
+        <label for="uploadButton" id="uploadLabel">
+          <i class="fas fa-upload"></i> رفع الملف
+        </label>
+        <button type="submit" id="uploadButton" style="display: none;"></button>
+
+        <div class="file-info" id="fileInfo">
+          <p id="fileName"></p>
+          <p id="fileSize"></p>
+          <p id="fileCount"></p>
+        </div>
+      </form>
+
+      <!-- حالة المعالجة -->
+      <div class="status" id="status">حالة الملف: في انتظار الرفع...</div>
+
+      <!-- مؤشر التقدم -->
+      <div class="progress-bar">
+        <div class="progress" id="progressBar"></div>
+      </div>
+
+      <!-- جدول الصور -->
+      <table id="imageTable">
+        <thead>
+          <tr>
+            <th>اسم الصورة</th>
+            <th>الرابط</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- الصور ستظهر هنا -->
+        </tbody>
+      </table>
+
+      <!-- رابط تحميل الملف النهائي -->
+      <div class="download-link" id="downloadLink" style="display: none;">
+        <a href="#" id="downloadFileLink">تحميل الملف النهائي</a>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      // تحديث حالة المعالجة ومؤشر التقدم
+      socket.on("progress", (data) => {
+        const progressBar = document.getElementById("progressBar");
+        const status = document.getElementById("status");
+
+        progressBar.style.width = `${data.progress}%`;
+        status.textContent = `حالة الملف: ${data.message}`;
+      });
+
+      // إضافة صورة إلى الجدول
+      socket.on("image-added", (data) => {
+        const tableBody = document.querySelector("#imageTable tbody");
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.name}</td>
+          <td><a href="${data.url}" target="_blank">${data.url}</a></td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      // عرض رابط تحميل الملف النهائي
+      socket.on("file-ready", (data) => {
+        const downloadLink = document.getElementById("downloadLink");
+        const downloadFileLink = document.getElementById("downloadFileLink");
+
+        downloadFileLink.href = data.fileUrl;
+        downloadLink.style.display = "block";
+      });
+
+      // إرسال الملف عند الرفع
+      document.getElementById("uploadForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const fileInput = document.getElementById("zipFile");
+        const formData = new FormData();
+        formData.append
+        ("file", fileInput.files[0]);
+
+        // إرسال الملف إلى السيرفر باستخدام Fetch API
+        fetch("/upload", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              document.getElementById("status").textContent =
+                "تم رفع الملف بنجاح! جاري المعالجة...";
+            } else {
+              document.getElementById("status").textContent =
+                "حدث خطأ أثناء رفع الملف.";
+            }
+          })
+          .catch((error) => {
+            document.getElementById("status").textContent =
+              "فشل الاتصال بالخادم.";
+            console.error("Error:", error);
+          });
+      });
+
+      // عرض معلومات الملف عند اختياره
+      document.getElementById("zipFile").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        const fileInfo = document.getElementById("fileInfo");
+
+        if (file) {
+          document.getElementById("fileName").textContent = `الاسم: ${file.name}`;
+          document.getElementById("fileSize").textContent = `الحجم: ${(
+            file.size /
+            (1024 * 1024)
+          ).toFixed(2)} ميجابايت`;
+          fileInfo.style.display = "block";
+        } else {
+          fileInfo.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>
